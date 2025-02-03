@@ -238,7 +238,7 @@ function setupMenu() {
     setupWatermark(); setupDropdown(); setupStatusPanel(); loadWidgetBot();
 }
 
-/* Main Functions */ 
+/* Main Functions */
 function setupMain(){
     function spoofQuestion() {
         const phrases = [ "🔥 Get good, get [Khanware](https://github.com/Niximkk/khanware/)!", "🤍 Made by [@im.nix](https://e-z.bio/sounix).", "☄️ By github.com/Niximkk/khanware/ " ];
@@ -281,35 +281,21 @@ function setupMain(){
                         bodyObj.variables.input.secondsWatched = durationSeconds;
                         bodyObj.variables.input.lastSecondWatched = durationSeconds;
                         body = JSON.stringify(bodyObj);
-                        if (input instanceof Request) { input = new Request(input, { body: body }); } 
-                        else init.body = body; 
+                        if (input instanceof Request) { input = new Request(input, { body: body }); }
+                        else init.body = body;
                         sendToast("🔓 Vídeo exploitado.", 1000)
                     }
                 } catch (e) { }
             }
             return originalFetch.apply(this, arguments);
-        };    
-    }
-    function minuteFarm() {
-        const originalFetch = window.fetch;
-        window.fetch = async function (input, init = {}) {
-            let body;
-            if (input instanceof Request) body = await input.clone().text();
-            else if (init.body) body = init.body;
-            if (features.minuteFarmer && body && input.url.includes("mark_conversions")) {
-                try {
-                    if (body.includes("termination_event")) { sendToast("🚫 Limitador de tempo bloqueado.", 1000); return; }
-                } catch (e) { }
-            }
-            return originalFetch.apply(this, arguments);
         };
-    };
+    }
     function spoofUser() {
         plppdo.on('domChanged', () => {
             if(!device.apple){
                 const pfpElement = document.querySelector('.avatar-pic');
                 const nicknameElement = document.querySelector('.user-deets.editable h2');
-                if (nicknameElement) nicknameElement.textContent = featureConfigs.customUsername || user.nickname; 
+                if (nicknameElement) nicknameElement.textContent = featureConfigs.customUsername || user.nickname;
                 if (featureConfigs.customPfp && pfpElement) { Object.assign(pfpElement, { src: featureConfigs.customPfp, alt: "Not an image URL"} );pfpElement.style.borderRadius="50%"}
             }
         });
@@ -331,7 +317,7 @@ function setupMain(){
                                         widget.options.choices.forEach(choice => {
                                             if (choice.correct) {
                                                 choice.content = "✅ " + choice.content;
-                                                sendToast("🔓 Respostas reveladas.", 1000);                
+                                                sendToast("🔓 Respostas reveladas.", 1000);
                                             }
                                         });
                                     }
@@ -344,33 +330,6 @@ function setupMain(){
             } catch (e) { }
             return body;
         };
-    }
-    function rgbLogo() {
-        plppdo.on('domChanged', () => {
-            const khanLogo = document.querySelector('svg._1rt6g9t').querySelector('path:nth-last-of-type(2)');
-            const styleElement = document.createElement('style');
-            styleElement.className = "RGBLogo"
-            styleElement.textContent = `
-                @keyframes colorShift {
-                    0% { fill: rgb(255, 0, 0); }
-                    33% { fill: rgb(0, 255, 0); }
-                    66% { fill: rgb(0, 0, 255); }
-                    100% { fill: rgb(255, 0, 0); }
-                }   
-            `;
-            if(features.rgbLogo&&khanLogo){
-                if(!document.getElementsByClassName('RGBLogo')[0]) document.head.appendChild(styleElement);
-                if(khanLogo.getAttribute('data-darkreader-inline-fill')!=null) khanLogo.removeAttribute('data-darkreader-inline-fill');
-                khanLogo.style.animation = 'colorShift 5s infinite';
-            }
-        })
-    }
-    function changeBannerText() {
-        const phrases = [ "[🌿] Non Skeetless dude.", "[🌿] Khanware on top.", "[🌿] Nix said hello!", "[🌿] God i wish i had Khanware.", "[🌿] Get good get Khanware!", "[🌿] the old khanware.space" ];
-        setInterval(() => { 
-            const greeting = document.querySelector('.stp-animated-banner h2');
-            if (greeting&&features.customBanner) greeting.textContent = phrases[Math.floor(Math.random() * phrases.length)];
-        }, 3000);
     }
     async function autoAnswer() {
         const baseClasses = ["_1r8cd7xe", "_ssxvf9l", "_ek84n5e", "_rz7ls7u", "_1yok8f4", "_1e5cuk2a"];
@@ -388,7 +347,7 @@ function setupMain(){
             await delay(featureConfigs.autoAnswerDelay*1);
         }
     }
-    spoofQuestion(); spoofVideo(); answerRevealer(); minuteFarm(); spoofUser(); rgbLogo(); changeBannerText(); autoAnswer();
+    spoofQuestion(); spoofVideo(); answerRevealer(); spoofUser(); autoAnswer();
 }
 
 /* Inject */
@@ -397,26 +356,26 @@ if (!/^https?:\/\/pt\.khanacademy\.org/.test(window.location.href)) { alert("❌
 showSplashScreen();
 
 loadScript('https://raw.githubusercontent.com/adryd325/oneko.js/refs/heads/main/oneko.js', 'onekoJs')
-.then(() => {
-    onekoEl = document.getElementById('oneko'); 
-    onekoEl.style.backgroundImage = "url('https://raw.githubusercontent.com/adryd325/oneko.js/main/oneko.gif')";
-    onekoEl.style.display = "none";
-});
+    .then(() => {
+        onekoEl = document.getElementById('oneko');
+        onekoEl.style.backgroundImage = "url('https://raw.githubusercontent.com/adryd325/oneko.js/main/oneko.gif')";
+        onekoEl.style.display = "none";
+    });
 loadScript('https://cdn.jsdelivr.net/npm/darkreader@4.9.92/darkreader.min.js', 'darkReaderPlugin')
-.then(()=>{
-    DarkReader.setFetchMethod(window.fetch)
-    DarkReader.enable();
-})
+    .then(()=>{
+        DarkReader.setFetchMethod(window.fetch)
+        DarkReader.enable();
+    })
 loadCss('https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css', 'toastifyCss');
 loadScript('https://cdn.jsdelivr.net/npm/toastify-js', 'toastifyPlugin')
-.then(async () => {
-    sendToast("🌿 Khanware injetado com sucesso!");
-    playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/gcelzszy.wav');
-    await delay(500);
-    sendToast(`⭐ Bem vindo(a) de volta: ${user.nickname}`);
-    loadedPlugins.forEach(plugin => sendToast(`🪝 ${plugin} Loaded!`, 2000, 'top') );
-    hideSplashScreen();
-    setupMenu();
-    setupMain();
-    console.clear();
-})
+    .then(async () => {
+        sendToast("🌿 Khanware injetado com sucesso!");
+        playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/gcelzszy.wav');
+        await delay(500);
+        sendToast(`⭐ Bem vindo(a) de volta: ${user.nickname}`);
+        loadedPlugins.forEach(plugin => sendToast(`🪝 ${plugin} Loaded!`, 2000, 'top') );
+        hideSplashScreen();
+        setupMenu();
+        setupMain();
+        console.clear();
+    })
