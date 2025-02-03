@@ -377,8 +377,8 @@ function setupMain(){
         while (true) {
             if(features.autoAnswer&&features.questionSpoof){
                 const classToCheck = [...baseClasses];
-                if (features.nextRecomendation) { device.mobile ? classToCheck.push("_ixuggsz") : classToCheck.push("_1kkrg8oi"); }
-                if (features.repeatQuestion) classToCheck.push("_1abyu0ga");
+                if (features.nextRecomendation) { device.mobile ? classToCheck.push("_ek84n5e") : classToCheck.push("_ek84n5e"); }
+                if (features.repeatQuestion) classToCheck.push("_ek84n5e");
                 classToCheck.forEach(async (q) => {
                     findAndClickByClass(q);
                     const element = document.getElementsByClassName(q)[0];
