@@ -378,7 +378,7 @@ function setupMain(){
         }, 3000);
     }
     async function autoAnswer() {
-        const baseClasses = ["_1tuo6xk", "_ssxvf9l", "_1f0fvyce", "_1r8cd7xe", "_1yok8f4", "_1e5cuk2a"];
+        const baseClasses = ["_1tuo6xk", "_1r8cd7xe", "_1f0fvyce", "_177sg8x", "_1yok8f4", "_1e5cuk2a"];
         while (true) {
             if(features.autoAnswer&&features.questionSpoof){
                 const classToCheck = [...baseClasses];
