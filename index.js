@@ -70,7 +70,7 @@ function setupMenu() {
     const setFeatureByPath = (path, value) => { let obj = window; const parts = path.split('.'); while (parts.length > 1) obj = obj[parts.shift()]; obj[parts[0]] = value; }
     function addFeature(features, container) {
         features.forEach(elements => {
-            const feature = document.createElement('feature');
+            const feature = document.createElement('div');
             elements.forEach(attribute => {
                 let element = attribute.type === 'nonInput' ? document.createElement('label') : document.createElement('input');
                 if (attribute.type === 'nonInput') element.innerHTML = attribute.name;
