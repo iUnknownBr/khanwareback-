@@ -155,21 +155,21 @@ function setupMenu() {
 
         // Add title and close button
         const titleBar = document.createElement('div');
-        titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;';
+        titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: move;';
         titleBar.innerHTML = `<h2 style="color: white; margin: 0; font-family: Monospace, sans-serif;"><span style="color: white;">Khan</span><span style="color: #72ff72;">Destroyer</span></h2>
-                            <button id="closeButton" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>`;
+                          <button id="closeButton" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>`;
         dropdownMenu.appendChild(titleBar);
 
         dropdownMenu.innerHTML += `
-            <style>
-                input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
-                border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
-                input[type="checkbox"]:checked {background-color: #72ff72; border-color: #72ff72;}
-                input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
-                    color: white; accent-color: #72ff72; background-color: #72ff72; padding: 3px; border-radius: 3px; background: none;}
-                label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
-            </style>
-        `;
+        <style>
+            input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
+            border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
+            input[type="checkbox"]:checked {background-color: #72ff72; border-color: #72ff72;}
+            input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
+                color: white; accent-color: #72ff72; background-color: #72ff72; padding: 3px; border-radius: 3px; background: none;}
+            label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
+        </style>
+    `;
         document.body.appendChild(dropdownMenu);
 
         let featuresList = [
@@ -191,6 +191,24 @@ function setupMenu() {
             dropdownMenu.style.opacity = '0';
             setTimeout(() => { dropdownMenu.style.display = 'none'; }, 300);
             playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav');
+        });
+
+        // Make the window draggable
+        let isDragging = false, offsetX, offsetY;
+        titleBar.addEventListener('mousedown', e => {
+            isDragging = true;
+            offsetX = e.clientX - dropdownMenu.offsetLeft;
+            offsetY = e.clientY - dropdownMenu.offsetTop;
+            dropdownMenu.style.transform = 'none';
+        });
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        document.addEventListener('mousemove', e => {
+            if (isDragging) {
+                dropdownMenu.style.left = `${e.clientX - offsetX}px`;
+                dropdownMenu.style.top = `${e.clientY - offsetY}px`;
+            }
         });
 
         watermark.addEventListener('click', () => {
