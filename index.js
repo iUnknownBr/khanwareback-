@@ -60,13 +60,12 @@ const findAndClickByClass = className => { const element = document.querySelecto
 
 function sendToast(text, duration=5000, gravity='bottom') { Toastify({ text: text, duration: duration, gravity: gravity, position: "center", stopOnFocus: true, style: { background: "#000000" } }).showToast(); };
 
-async function showSplashScreen() { splashScreen.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background-color:#000;display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;transition:opacity 0.5s ease;user-select:none;color:white;font-family:MuseoSans,sans-serif;font-size:30px;text-align:center;"; splashScreen.innerHTML = '<span style="color:white;">KHANWARE</span><span style="color:#72ff72;">.SPACE</span>'; document.body.appendChild(splashScreen); setTimeout(() => splashScreen.style.opacity = '1', 10);};
+async function showSplashScreen() { splashScreen.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background-color:#000;display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;transition:opacity 0.5s ease;user-select:none;color:white;font-family:MuseoSans,sans-serif;font-size:30px;text-align:center;"; splashScreen.innerHTML = '<span style="color:white;">KhanDestroyer</span><span style="color:#72ff72;">.SPACE</span>'; document.body.appendChild(splashScreen); setTimeout(() => splashScreen.style.opacity = '1', 10);};
 async function hideSplashScreen() { splashScreen.style.opacity = '0'; setTimeout(() => splashScreen.remove(), 1000); };
 
 async function loadScript(url, label) { return fetch(url).then(response => response.text()).then(script => { loadedPlugins.push(label); eval(script); }); }
 async function loadCss(url) { return new Promise((resolve) => { const link = document.createElement('link'); link.rel = 'stylesheet'; link.type = 'text/css'; link.href = url; link.onload = () => resolve(); document.head.appendChild(link); }); }
 
-/* Visual Functions */
 function setupMenu() {
     const setFeatureByPath = (path, value) => { let obj = window; const parts = path.split('.'); while (parts.length > 1) obj = obj[parts.shift()]; obj[parts[0]] = value; }
     function addFeature(features) {
@@ -156,7 +155,7 @@ function setupMenu() {
                 input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
                 border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
                 input[type="checkbox"]:checked {background-color: #540b8a; border-color: #720fb8;}
-                input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434; 
+                input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
                 color: white; accent-color: #540b8a; background-color: #540b8a; padding: 3px; border-radius: 3px; background: none;}
                 label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
             </style>
@@ -169,14 +168,10 @@ function setupMenu() {
             [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', dependent: 'autoAnswerDelay,nextRecomendation,repeatQuestion', labeled: true, label: 'Auto Answer' },
                 { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', attributes: 'style="display:none;"', labeled: true, label: 'Repeat Question' },
                 { name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', attributes: 'style="display:none;"', labeled: true, label: 'Recomendations' },
-                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'features.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }],];
-        featuresList.push([{ name: `${user.username} - UID: ${user.UID}`, type: 'nonInput', attributes: 'style="font-size:10px;"padding-left:5px;' }]);
+                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }],];
 
         addFeature(featuresList);
         handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
-        if (!device.apple){
-            handleInput(['customName', 'customPfp'])
-        }
         handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
         handleInput('darkMode', checked => checked ? (DarkReader.setFetchMethod(window.fetch), DarkReader.enable()) : DarkReader.disable());
@@ -229,7 +224,7 @@ function setupMenu() {
 /* Main Functions */
 function setupMain(){
     function spoofQuestion() {
-        const phrases = [ "🔥 Get good, get [Khanware](https://github.com/Niximkk/khanware/)!", "🤍 Made by [@im.nix](https://e-z.bio/sounix).", "☄️ By github.com/Niximkk/khanware/ " ];
+        const phrases = [ "🔥 Get good, get [KhanDestroyer](https://github.com/Niximkk/KhanDestroyer/)!", "🤍 Made by [@im.nix](https://e-z.bio/sounix).", "☄️ By github.com/Niximkk/KhanDestroyer/ " ];
         const originalFetch = window.fetch;
         window.fetch = async function (input, init) {
             let body;
@@ -354,7 +349,7 @@ function setupMain(){
         })
     }
     function changeBannerText() {
-        const phrases = [ "[🌿] Non Skeetless dude.", "[🌿] Khanware on top.", "[🌿] Nix said hello!", "[🌿] God i wish i had Khanware.", "[🌿] Get good get Khanware!", "[🌿] the old khanware.space" ];
+        const phrases = [ "[🌿] Non Skeetless dude.", "[🌿] KhanDestroyer on top.", "[🌿] Nix said hello!", "[🌿] God i wish i had KhanDestroyer.", "[🌿] Get good get KhanDestroyer!", "[🌿] the old KhanDestroyer.space" ];
         setInterval(() => {
             const greeting = document.querySelector('.stp-animated-banner h2');
             if (greeting&&features.customBanner) greeting.textContent = phrases[Math.floor(Math.random() * phrases.length)];
@@ -380,7 +375,7 @@ function setupMain(){
 }
 
 /* Inject */
-if (!/^https?:\/\/pt\.khanacademy\.org/.test(window.location.href)) { alert("❌ Khanware Failed to Injected!\n\nVocê precisa executar o Khanware no site do Khan Academy! (https://pt.khanacademy.org/)"); window.location.href = "https://pt.khanacademy.org/";};
+if (!/^https?:\/\/pt\.khanacademy\.org/.test(window.location.href)) { alert("❌ KhanDestroyer Failed to Injected!\n\nVocê precisa executar o KhanDestroyer no site do Khan Academy! (https://pt.khanacademy.org/)"); window.location.href = "https://pt.khanacademy.org/";};
 
 showSplashScreen();
 
@@ -398,7 +393,7 @@ loadScript('https://cdn.jsdelivr.net/npm/darkreader@4.9.92/darkreader.min.js', '
 loadCss('https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css', 'toastifyCss');
 loadScript('https://cdn.jsdelivr.net/npm/toastify-js', 'toastifyPlugin')
     .then(async () => {
-        sendToast("🌿 Khanware injetado com sucesso!");
+        sendToast("🍃 Khan Destroyer habilitado com sucesso.");
         playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/gcelzszy.wav');
         await delay(500);
         sendToast(`⭐ Bem vindo(a) de volta: ${user.nickname}`);
@@ -408,28 +403,3 @@ loadScript('https://cdn.jsdelivr.net/npm/toastify-js', 'toastifyPlugin')
         setupMain();
         console.clear();
     })
-
-// Intercept the creation of audio and video elements
-const originalCreateElement = document.createElement;
-document.createElement = function(tagName, options) {
-    const element = originalCreateElement.call(document, tagName, options);
-    if (tagName === 'audio' || tagName === 'video') {
-        element.muted = true;
-        element.volume = 0;
-    }
-    return element;
-};
-
-// Mute existing audio and video elements
-document.querySelectorAll('audio, video').forEach(element => {
-    element.muted = true;
-    element.volume = 0;
-});
-
-// Intercept the play method of audio and video elements
-const originalPlay = HTMLMediaElement.prototype.play;
-HTMLMediaElement.prototype.play = function() {
-    this.muted = true;
-    this.volume = 0;
-    return originalPlay.apply(this, arguments);
-};
