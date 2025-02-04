@@ -164,18 +164,18 @@ function setupMenu() {
             <style>
                 input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
                 border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
-                input[type="checkbox"]:checked {background-color: #540b8a; border-color: #720fb8;}
+                input[type="checkbox"]:checked {background-color: #72ff72; border-color: #72ff72;}
                 input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
-                color: white; accent-color: #540b8a; background-color: #540b8a; padding: 3px; border-radius: 3px; background: none;}
+                    color: white; accent-color: #72ff72; background-color: #72ff72; padding: 3px; border-radius: 3px; background: none;}
                 label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
             </style>
         `;
         document.body.appendChild(dropdownMenu);
 
         let featuresList = [
-            [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Spoof' },
-                { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Spoof' },
-                { name: 'showAnswers', type: 'checkbox', variable: 'features.showAnswers', labeled: true, label: 'Answer Revealer' }],
+            [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Exploit' },
+                { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Exploit' },
+                { name: 'showAnswers', type: 'checkbox', variable: 'features.showAnswers', attributes: 'checked', labeled: true, label: 'Reveal Answer' }],
             [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', dependent: 'autoAnswerDelay,nextRecomendation,repeatQuestion', labeled: true, label: 'Auto Answer' },
                 { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', attributes: 'style="display:none;"', labeled: true, label: 'Repeat Question' },
                 { name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', attributes: 'style="display:none;"', labeled: true, label: 'Recomendations' },
@@ -183,11 +183,9 @@ function setupMenu() {
         ];
 
         addFeature(featuresList);
-        handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
+        handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion']);
         handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
-        handleInput('darkMode', checked => checked ? (DarkReader.setFetchMethod(window.fetch), DarkReader.enable()) : DarkReader.disable());
-
         // Close button functionality
         document.getElementById('closeButton').addEventListener('click', () => {
             dropdownMenu.style.opacity = '0';
