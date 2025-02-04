@@ -1,510 +1,413 @@
-const ver = "V4.0.0";
+const ver = "V4.0.1";
 
-let device = {
-    mobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone|Mobile|Tablet|Kindle|Silk|PlayBook|BB10/i.test(navigator.userAgent),
-    apple: /iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(navigator.userAgent)
-};
+// Utility class for safer event handling
+class SafeEventEmitter {
+    constructor() {
+        this.events = new Map();
+    }
 
-/* User */
-// Discaimer: user parameters were managed by the main injector.
-// This will not change automatically.
-let user = {
-    username: "Username",
-    nickname: "Nickname",
-    UID: 0
-}
-
-let loadedPlugins = [];
-
-/* Elements */
-const unloader = document.createElement('unloader');
-const dropdownMenu = document.createElement('dropDownMenu');
-const watermark = document.createElement('watermark');
-const statsPanel = document.createElement('statsPanel');
-const splashScreen = document.createElement('splashScreen');
-
-/* Globals */
-window.features = {
-    questionSpoof: true,
-    videoSpoof: true,
-    showAnswers: false,
-    autoAnswer: false,
-    customBanner: false,
-    nextRecomendation: false,
-    repeatQuestion: false,
-    minuteFarmer: false,
-    rgbLogo: false
-};
-window.featureConfigs = {
-    autoAnswerDelay: 3,
-    customUsername: "",
-    customPfp: ""
-};
-
-/* Misc Styles */
-document.head.appendChild(Object.assign(document.createElement("style"),{innerHTML:"@font-face{font-family:'Montserrat';src:url('https://fonts.gstatic.com/s/montserrat/v15/JTURjIg1_i6t8kCHKm45_dJE3gnD-w.ttf')format('truetype')}" }));
-document.head.appendChild(Object.assign(document.createElement('style'),{innerHTML:"::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #555; }"}));
-document.querySelector("link[rel~='icon']").href = 'https://i.imgur.com/IHXLnSx.png';
-
-/* Emmiter */
-class EventEmitter{constructor(){this.events={}}on(t,e){"string"==typeof t&&(t=[t]),t.forEach(t=>{this.events[t]||(this.events[t]=[]),this.events[t].push(e)})}off(t,e){"string"==typeof t&&(t=[t]),t.forEach(t=>{this.events[t]&&(this.events[t]=this.events[t].filter(t=>t!==e))})}emit(t,...e){this.events[t]&&this.events[t].forEach(t=>{t(...e)})}once(t,e){"string"==typeof t&&(t=[t]);let s=(...i)=>{e(...i),this.off(t,s)};this.on(t,s)}};
-const plppdo = new EventEmitter();
-
-new MutationObserver((mutationsList) => { for (let mutation of mutationsList) if (mutation.type === 'childList') plppdo.emit('domChanged'); }).observe(document.body, { childList: true, subtree: true });
-
-/* Misc Functions */
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const playAudio = url => { const audio = new Audio(url); audio.play(); };
-const checkCollision = (obj1, obj2) => !( obj1.right < obj2.left || obj1.left > obj2.right || obj1.bottom < obj2.top || obj1.top > obj2.bottom );
-const findAndClickByClass = className => { const element = document.querySelector(`.${className}`); if (element) { element.click(); sendToast(`⭕ Pressionando ${className}...`, 1000); } }
-
-function sendToast(text, duration=5000, gravity='bottom') { Toastify({ text: text, duration: duration, gravity: gravity, position: "center", stopOnFocus: true, style: { background: "#000000" } }).showToast(); };
-
-async function showSplashScreen() { splashScreen.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background-color:#000;display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;transition:opacity 0.5s ease;user-select:none;color:white;font-family:Montserrat,sans-serif;font-size:30px;text-align:center;"; splashScreen.innerHTML = '<span style="color:white;">KhanDestroyer</span><span style="color:#72ff72;">.SPACE</span>'; document.body.appendChild(splashScreen); setTimeout(() => splashScreen.style.opacity = '1', 10);};
-async function hideSplashScreen() { splashScreen.style.opacity = '0'; setTimeout(() => splashScreen.remove(), 1000); };
-
-async function loadScript(url, label) { return fetch(url).then(response => response.text()).then(script => { loadedPlugins.push(label); eval(script); }); }
-async function loadCss(url) { return new Promise((resolve) => { const link = document.createElement('link'); link.rel = 'stylesheet'; link.type = 'text/css'; link.href = url; link.onload = () => resolve(); document.head.appendChild(link); }); }
-
-function setupMenu() {
-    const setFeatureByPath = (path, value) => { let obj = window; const parts = path.split('.'); while (parts.length > 1) obj = obj[parts.shift()]; obj[parts[0]] = value; }
-    function addFeature(features, container) {
-        features.forEach(elements => {
-            const feature = document.createElement('div');
-            elements.forEach(attribute => {
-                let element = attribute.type === 'nonInput' ? document.createElement('label') : document.createElement('input');
-                if (attribute.type === 'nonInput') element.innerHTML = attribute.name;
-                else { element.type = attribute.type; element.id = attribute.name; }
-
-                if (attribute.attributes) {
-                    attribute.attributes.split(' ').map(attr => attr.split('=')).forEach(([key, value]) => {
-                        value = value ? value.replace(/"/g, '') : '';
-                        key === 'style' ? element.style.cssText = value : element.setAttribute(key, value);
-                    });
-                }
-
-                if (attribute.variable) element.setAttribute('setting-data', attribute.variable);
-                if (attribute.dependent) element.setAttribute('dependent', attribute.dependent);
-                if (attribute.className) element.classList.add(attribute.className);
-
-                if (attribute.labeled) {
-                    const label = document.createElement('label');
-                    if (attribute.className) label.classList.add(attribute.className);
-                    if (attribute.attributes) {
-                        attribute.attributes.split(' ').map(attr => attr.split('=')).forEach(([key, value]) => {
-                            value = value ? value.replace(/"/g, '') : '';
-                            key === 'style' ? label.style.cssText = value : label.setAttribute(key, value);
-                        });
-                    }
-                    label.innerHTML = `${element.outerHTML} ${attribute.label}`;
-                    feature.appendChild(label);
-                } else {
-                    feature.appendChild(element);
-                }
-            });
-            container.appendChild(feature);
+    on(events, callback) {
+        if (typeof events === 'string') events = [events];
+        events.forEach(event => {
+            if (!this.events.has(event)) {
+                this.events.set(event, new Set());
+            }
+            this.events.get(event).add(callback);
         });
     }
-    function handleInput(ids, callback = null) {
-        (Array.isArray(ids) ? ids.map(id => document.getElementById(id)) : [document.getElementById(ids)])
-            .forEach(element => {
-                if (!element) return;
-                const setting = element.getAttribute('setting-data'),
-                    dependent = element.getAttribute('dependent'),
-                    handleEvent = (e, value) => {
-                        setFeatureByPath(setting, value);
-                        if (callback) callback(value, e);
-                    };
 
-                if (element.type === 'checkbox') {
-                    element.addEventListener('change', (e) => {
-                        playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/5os0bypi.wav');
-                        handleEvent(e, e.target.checked);
-                        if (dependent) dependent.split(',').forEach(dep =>
-                            document.querySelectorAll(`.${dep}`).forEach(depEl =>
-                                depEl.style.display = e.target.checked ? null : "none"));
-                    });
-                } else {
-                    element.addEventListener('input', (e) => handleEvent(e, e.target.value));
+    off(events, callback) {
+        if (typeof events === 'string') events = [events];
+        events.forEach(event => {
+            if (this.events.has(event)) {
+                this.events.get(event).delete(callback);
+            }
+        });
+    }
+
+    emit(event, ...args) {
+        if (this.events.has(event)) {
+            this.events.get(event).forEach(callback => {
+                try {
+                    callback(...args);
+                } catch (error) {
+                    console.error(`Error in event ${event}:`, error);
                 }
             });
+        }
     }
-    function setupWatermark() {
+}
+
+// Device detection using feature detection
+const device = {
+    mobile: () => window.matchMedia("(max-width: 768px)").matches,
+    apple: () => /Mac|iPad|iPhone|iPod/.test(navigator.platform),
+    touchDevice: () => 'ontouchstart' in window
+};
+
+// Feature management
+const featureManager = {
+    features: {
+        questionSpoof: true,
+        videoSpoof: true,
+        showAnswers: false,
+        autoAnswer: false,
+        customBanner: false,
+        nextRecommendation: false,
+        repeatQuestion: false,
+        minuteFarmer: false,
+        rgbLogo: false
+    },
+    configs: {
+        autoAnswerDelay: 3,
+        customUsername: "",
+        customPfp: ""
+    },
+    setFeature(path, value) {
+        const parts = path.split('.');
+        let obj = this;
+        while (parts.length > 1) {
+            obj = obj[parts.shift()];
+        }
+        obj[parts[0]] = value;
+    }
+};
+
+// Toast notifications
+class ToastManager {
+    static async showToast(message, duration = 5000) {
+        if (typeof Toastify === 'undefined') {
+            console.error('Toastify not loaded');
+            return;
+        }
+
+        Toastify({
+            text: message,
+            duration: duration,
+            gravity: "bottom",
+            position: "center",
+            stopOnFocus: true,
+            style: { background: "#000000" }
+        }).showToast();
+    }
+}
+
+// UI Elements Management
+class UIManager {
+    constructor(eventEmitter) {
+        this.eventEmitter = eventEmitter;
+        this.elements = {};
+    }
+
+    createWatermark() {
+        const watermark = document.createElement('div');
         Object.assign(watermark.style, {
-            position: 'fixed', top: '0', left: '85%', width: '150px', height: '30px', backgroundColor: 'RGB(0,0,0,0.5)',
-            color: 'white', fontSize: '15px', fontFamily: 'Montserrat, sans-serif', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            cursor: 'default', userSelect: 'none', padding: '0 10px',  borderRadius: '10px', zIndex: '1001', transition: 'transform 0.3s ease'
+            position: 'fixed',
+            top: '0',
+            left: device.mobile() ? '55%' : '85%',
+            width: '150px',
+            height: '30px',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            color: 'white',
+            fontSize: '15px',
+            fontFamily: 'Montserrat, sans-serif',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: 'default',
+            userSelect: 'none',
+            padding: '0 10px',
+            borderRadius: '10px',
+            zIndex: '1001',
+            transition: 'transform 0.3s ease'
         });
-        if (device.mobile) watermark.style.left = '55%'
-        watermark.innerHTML = `<span style="text-shadow: -1px 0.5px 0 #72ff72, -2px 0px 0 #2f672e;">kd</span> <span style="color:gray; padding-left:2px; font-family: Arial, sans-serif; font-size:10px">${ver}</span>`;
-        document.body.appendChild(watermark);
-        let isDragging = false, offsetX, offsetY;
-        watermark.addEventListener('mousedown', e => { if (!dropdownMenu.contains(e.target)) { isDragging = true; offsetX = e.clientX - watermark.offsetLeft; offsetY = e.clientY - watermark.offsetTop; watermark.style.transform = 'scale(0.9)'; unloader.style.transform = 'scale(1)'; } });
-        watermark.addEventListener('mouseup', () => { isDragging = false; watermark.style.transform = 'scale(1)'; unloader.style.transform = 'scale(0)'; if (checkCollision(watermark.getBoundingClientRect(), unloader.getBoundingClientRect())) unload(); });
-        document.addEventListener('mousemove', e => { if (isDragging) { let newX = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - watermark.offsetWidth)); let newY = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - watermark.offsetHeight)); Object.assign(watermark.style, { left: `${newX}px`, top: `${newY}px` }); dropdownMenu.style.display = 'none'; } });
-    }
-    function setupDropdown() {
-        const optionsWindow = document.createElement('div');
-        Object.assign(optionsWindow.style, {
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: '300px', height: '400px', backgroundColor: 'rgba(0,0,0,0.8)', color: 'white',
-            borderRadius: '10px', zIndex: '1001', padding: '20px', display: 'none', flexDirection: 'column',
-            justifyContent: 'center', alignItems: 'center', overflowY: 'auto'
-        });
 
-        optionsWindow.innerHTML = `
-        <style>
-            input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
-            border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
-            input[type="checkbox"]:checked {background-color: #540b8a; border-color: #720fb8;}
-            input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
-            color: white; accent-color: #540b8a; background-color: #540b8a; padding: 3px; border-radius: 3px; background: none;}
-            label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
-            .autoAnswerDelay, .nextRecomendation, .repeatQuestion { transition: display 0.3s ease; }
-        </style>
-    `;
-
-        let featuresList = [
-            [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Spoof' },
-                { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Spoof' },
-                { name: 'showAnswers', type: 'checkbox', variable: 'features.showAnswers', labeled: true, label: 'Answer Revealer' }],
-            [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', labeled: true, label: 'Auto Answer' },
-                { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', labeled: true, label: 'Repeat Question' },
-                { name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', labeled: true, label: 'Recomendations' },
-                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'min="1" max="3" value="1"', labeled: false }]
-        ];
-
-        addFeature(featuresList, optionsWindow);
-
-        // Modificação na função handleInput para o autoAnswer
-        function handleAutoAnswer() {
-            const autoAnswerCheckbox = document.getElementById('autoAnswer');
-            const dependentElements = {
-                repeatQuestion: document.querySelector('.repeatQuestion'),
-                nextRecomendation: document.querySelector('.nextRecomendation'),
-                autoAnswerDelay: document.querySelector('.autoAnswerDelay')
-            };
-
-            if (autoAnswerCheckbox) {
-                autoAnswerCheckbox.addEventListener('change', (e) => {
-                    playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/5os0bypi.wav');
-                    features.autoAnswer = e.target.checked;
-
-                    // Força o questionSpoof se autoAnswer estiver ativado
-                    if (e.target.checked && !features.questionSpoof) {
-                        document.querySelector('[setting-data="features.questionSpoof"]').checked = true;
-                        features.questionSpoof = true;
-                    }
-
-                    // Toggle visibilidade dos elementos dependentes
-                    Object.values(dependentElements).forEach(element => {
-                        if (element) {
-                            element.style.display = e.target.checked ? 'block' : 'none';
-                        }
-                    });
-                });
-            }
-        }
-
-        // Configuração dos outros inputs
-        handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
-        handleAutoAnswer();
-        handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
-
-        // Close button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'Close';
-        Object.assign(closeButton.style, {
-            marginTop: '20px', padding: '10px', backgroundColor: '#540b8a', color: 'white',
-            border: 'none', borderRadius: '5px', cursor: 'pointer'
-        });
-        closeButton.addEventListener('click', () => optionsWindow.style.display = 'none');
-        optionsWindow.appendChild(closeButton);
-
-        document.body.appendChild(optionsWindow);
-
-        watermark.addEventListener('click', () => {
-            optionsWindow.style.display = 'flex';
-            playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/3kd01iyj.wav');
-        });
-    }
-    function setupStatusPanel() {
-        Object.assign(statsPanel.style, {
-            position: 'fixed', top: '95%', left: '20px', width: '250px', height: '30px',
-            backgroundColor: 'rgb(0,0,0,0.2)', color: 'white', fontSize: '13px', fontFamily: 'Arial, sans-serif',
-            display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'default', borderRadius: '10px',
-            userSelect: 'none', zIndex: '1000', transition: 'transform 0.3s', backdropFilter: 'blur(1.5px)', WebkitBackdropFilter: 'blur(1.5px)'
-        });
-        const getPing = async () => { try { const t = performance.now(); await fetch('https://pt.khanacademy.org/', { method: 'HEAD' }); return Math.round(performance.now() - t); } catch { return 'Error'; } };
-        let lastFrameTime = performance.now(), frameCount = 0, fps = 0;
-        (function calcFPS() { if (++frameCount && performance.now() - lastFrameTime >= 1000) { fps = Math.round(frameCount * 1000 / (performance.now() - lastFrameTime)); frameCount = 0; lastFrameTime = performance.now(); } requestAnimationFrame(calcFPS); })();
-        const getTime = () => new Date().toLocaleTimeString();
-        const update = async () => statsPanel.innerHTML = `
-            <span style="text-shadow: -1px 0.5px 0 #p, -2px 0px 0 #2f672e;">kd</span>
-            <span style="margin: 0 8px;">|</span><span>${fps}fps</span>
-            <span style="margin: 0 8px;">|</span><span>${await getPing()}ms</span>
-            <span style="margin: 0 8px;">|</span><span>${getTime()}</span>
+        watermark.innerHTML = `
+            <span style="text-shadow: -1px 0.5px 0 #72ff72, -2px 0px 0 #2f672e;">kd</span>
+            <span style="color:gray; padding-left:2px; font-family: Arial, sans-serif; font-size:10px">${ver}</span>
         `;
-        update(); document.body.appendChild(statsPanel); setInterval(update, 1000);
-        let isDragging = false, offsetX, offsetY;
-        statsPanel.onmousedown = e => { isDragging = true; offsetX = e.clientX - statsPanel.offsetLeft; offsetY = e.clientY - statsPanel.offsetTop; statsPanel.style.transform = 'scale(0.9)'; };
-        statsPanel.onmouseup = () => { isDragging = false; statsPanel.style.transform = 'scale(1)'; };
-        document.onmousemove = e => { if (isDragging) { Object.assign(statsPanel.style, { left: `${Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - statsPanel.offsetWidth))}px`, top: `${Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - statsPanel.offsetHeight))}px` }); }};
-        if(device.mobile) plppdo.on('domChanged', () => window.location.href.includes("khanacademy.org/profile") ? statsPanel.style.display = 'flex' : statsPanel.style.display = 'none' );
+
+        this.setupDraggable(watermark);
+        this.elements.watermark = watermark;
+        document.body.appendChild(watermark);
+        return watermark;
     }
-    function loadWidgetBot() {
-        if(device.mobile)  return;
-        const script = Object.assign(document.createElement('script'), {
-            src: 'https://cdn.jsdelivr.net/npm/@widgetbot/crate@3',
-            async: true,
-            onload: () => {
-                const discEmbed = new Crate({ server: '1286573512831533056', channel: '1286573601687867433',
-                    location: ['bottom', 'right'], notifications: true, indicator: true, allChannelNotifications: true,
-                    defer: false, color: '#000000'
-                });
-                plppdo.on('domChanged', () => window.location.href.includes("khanacademy.org/profile") ? discEmbed.show() : discEmbed.hide() );
-            }
+
+    createOptionsMenu() {
+        const menu = document.createElement('div');
+        Object.assign(menu.style, {
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '300px',
+            height: '400px',
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            color: 'white',
+            borderRadius: '10px',
+            zIndex: '1001',
+            padding: '20px',
+            display: 'none',
+            flexDirection: 'column',
+            overflowY: 'auto'
         });
-        document.body.appendChild(script);
+
+        menu.innerHTML = this.createOptionsMenuContent();
+        this.setupOptionsHandlers(menu);
+        this.elements.optionsMenu = menu;
+        document.body.appendChild(menu);
+        return menu;
     }
-    setupWatermark(); setupDropdown(); setupStatusPanel(); loadWidgetBot();
+
+    setupDraggable(element) {
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
+
+        element.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offset.x = e.clientX - element.offsetLeft;
+            offset.y = e.clientY - element.offsetTop;
+            element.style.transform = 'scale(0.9)';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const x = Math.max(0, Math.min(e.clientX - offset.x, window.innerWidth - element.offsetWidth));
+            const y = Math.max(0, Math.min(e.clientY - offset.y, window.innerHeight - element.offsetHeight));
+
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            element.style.transform = 'scale(1)';
+        });
+    }
+
+    createOptionsMenuContent() {
+        return `
+            <style>
+                input[type="checkbox"] {
+                    appearance: none;
+                    width: 15px;
+                    height: 15px;
+                    background-color: #3a3a3b;
+                    border: 1px solid #acacac;
+                    border-radius: 3px;
+                    margin-right: 5px;
+                    cursor: pointer;
+                }
+                input[type="checkbox"]:checked {
+                    background-color: #540b8a;
+                    border-color: #720fb8;
+                }
+                label {
+                    display: flex;
+                    align-items: center;
+                    color: #3a3a3b;
+                    padding-top: 3px;
+                }
+            </style>
+            <div class="options-content">
+                <!-- Features -->
+                <div class="feature-group">
+                    <label>
+                        <input type="checkbox" id="questionSpoof" ${featureManager.features.questionSpoof ? 'checked' : ''}>
+                        Question Spoof
+                    </label>
+                    <label>
+                        <input type="checkbox" id="videoSpoof" ${featureManager.features.videoSpoof ? 'checked' : ''}>
+                        Video Spoof
+                    </label>
+                    <!-- Add other features -->
+                </div>
+                <button id="closeOptions" style="margin-top: 20px; padding: 10px; background: #540b8a; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Close
+                </button>
+            </div>
+        `;
+    }
+
+    setupOptionsHandlers(menu) {
+        // Setup checkbox handlers
+        menu.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                featureManager.setFeature(`features.${e.target.id}`, e.target.checked);
+                this.playToggleSound();
+            });
+        });
+
+        // Close button handler
+        menu.querySelector('#closeOptions').addEventListener('click', () => {
+            menu.style.display = 'none';
+        });
+    }
+
+    async playToggleSound() {
+        try {
+            const audio = new Audio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/5os0bypi.wav');
+            await audio.play();
+        } catch (error) {
+            console.error('Error playing sound:', error);
+        }
+    }
 }
 
-/* Main Functions */
-function setupMain() {
-    function spoofQuestion() {
-        const phrases = ["by iUnknownBR & m4nst3in"];
+// Feature implementations
+class FeatureImplementation {
+    static setupQuestionSpoof() {
         const originalFetch = window.fetch;
-        window.fetch = async function (input, init) {
-            let body;
-            if (input instanceof Request) body = await input.clone().text();
-            else if (init && init.body) body = init.body;
-            const originalResponse = await originalFetch.apply(this, arguments);
-            const clonedResponse = originalResponse.clone();
+        window.fetch = async function(input, init) {
             try {
-                const responseBody = await clonedResponse.text();
-                let responseObj = JSON.parse(responseBody);
-                if (features.questionSpoof && responseObj?.data?.assessmentItem?.item?.itemData) {
-                    let itemData = JSON.parse(responseObj.data.assessmentItem.item.itemData);
-                    if (itemData.question.content[0] === itemData.question.content[0].toUpperCase()) {
-                        itemData.answerArea = {
-                            "calculator": false,
-                            "chi2Table": false,
-                            "periodicTable": false,
-                            "tTable": false,
-                            "zTable": false
-                        }
-                        itemData.question.content = phrases[Math.floor(Math.random() * phrases.length)] + `[[☃ radio 1]]`;
-                        itemData.question.widgets = {
-                            "radio 1": {
-                                options: {
-                                    choices: [{
-                                        content: "✅ Resposta correta.",
-                                        correct: true
-                                    }, {content: "❎ Resposta incorreta.", correct: false}]
-                                }
-                            }
-                        };
-                        responseObj.data.assessmentItem.item.itemData = JSON.stringify(itemData);
-                        sendToast("🔓 Questão exploitada.", 1000);
-                        return new Response(JSON.stringify(responseObj), {
-                            status: originalResponse.status,
-                            statusText: originalResponse.statusText,
-                            headers: originalResponse.headers
-                        });
-                    }
+                if (!featureManager.features.questionSpoof) {
+                    return originalFetch.apply(this, arguments);
                 }
-            } catch (e) {
-            }
-            return originalResponse;
-        };
-    }
 
-    function spoofVideo() {
-        const originalFetch = window.fetch;
-        window.fetch = async function (input, init) {
-            let body;
-            if (input instanceof Request) body = await input.clone().text();
-            else if (init && init.body) body = init.body;
-            if (features.videoSpoof && body && body.includes('"operationName":"updateUserVideoProgress"')) {
+                const response = await originalFetch.apply(this, arguments);
+                const clone = response.clone();
+                const text = await clone.text();
+
                 try {
-                    let bodyObj = JSON.parse(body);
-                    if (bodyObj.variables && bodyObj.variables.input) {
-                        const durationSeconds = bodyObj.variables.input.durationSeconds;
-                        bodyObj.variables.input.secondsWatched = durationSeconds;
-                        bodyObj.variables.input.lastSecondWatched = durationSeconds;
-                        body = JSON.stringify(bodyObj);
-                        if (input instanceof Request) {
-                            input = new Request(input, {body: body});
-                        } else init.body = body;
-                        sendToast("🔓 Vídeo exploitado.", 1000)
-                    }
-                } catch (e) {
-                }
-            }
-            return originalFetch.apply(this, arguments);
-        };
-    }
-
-    function minuteFarm() {
-        const originalFetch = window.fetch;
-        window.fetch = async function (input, init = {}) {
-            let body;
-            if (input instanceof Request) body = await input.clone().text();
-            else if (init.body) body = init.body;
-            if (features.minuteFarmer && body && input.url.includes("mark_conversions")) {
-                try {
-                    if (body.includes("termination_event")) {
-                        sendToast("🚫 Limitador de tempo bloqueado.", 1000);
-                        return;
-                    }
-                } catch (e) {
-                }
-            }
-            return originalFetch.apply(this, arguments);
-        };
-    };
-
-    function spoofUser() {
-        plppdo.on('domChanged', () => {
-            if (!device.apple) {
-                const pfpElement = document.querySelector('.avatar-pic');
-                const nicknameElement = document.querySelector('.user-deets.editable h2');
-                if (nicknameElement) nicknameElement.textContent = featureConfigs.customUsername || user.nickname;
-                if (featureConfigs.customPfp && pfpElement) {
-                    Object.assign(pfpElement, {src: featureConfigs.customPfp, alt: "Not an image URL"});
-                    pfpElement.style.borderRadius = "50%"
-                }
-            }
-        });
-    }
-
-    function answerRevealer() {
-        const originalParse = JSON.parse;
-        JSON.parse = function (e, t) {
-            let body = originalParse(e, t);
-            try {
-                if (body?.data) {
-                    Object.keys(body.data).forEach(key => {
-                        const data = body.data[key];
-                        if (features.showAnswers && key === "assessmentItem" && data?.item) {
-                            const itemData = JSON.parse(data.item.itemData);
-                            if (itemData.question && itemData.question.widgets && itemData.question.content[0] === itemData.question.content[0].toUpperCase()) {
-                                Object.keys(itemData.question.widgets).forEach(widgetKey => {
-                                    const widget = itemData.question.widgets[widgetKey];
-                                    if (widget.options && widget.options.choices) {
-                                        widget.options.choices.forEach(choice => {
-                                            if (choice.correct) {
-                                                choice.content = "✅ " + choice.content;
-                                                sendToast("🔓 Respostas reveladas.", 1000);
-                                            }
-                                        });
+                    const data = JSON.parse(text);
+                    if (data?.data?.assessmentItem?.item?.itemData) {
+                        // Modify question data
+                        const itemData = JSON.parse(data.data.assessmentItem.item.itemData);
+                        if (itemData.question.content[0] === itemData.question.content[0].toUpperCase()) {
+                            itemData.question.content = "by iUnknownBR & m4nst3in [[☃ radio 1]]";
+                            itemData.question.widgets = {
+                                "radio 1": {
+                                    options: {
+                                        choices: [
+                                            { content: "✅ Resposta correta.", correct: true },
+                                            { content: "❎ Resposta incorreta.", correct: false }
+                                        ]
                                     }
-                                });
-                                data.item.itemData = JSON.stringify(itemData);
-                            }
+                                }
+                            };
+                            data.data.assessmentItem.item.itemData = JSON.stringify(itemData);
+                            ToastManager.showToast("🔓 Questão exploitada.", 1000);
+                            return new Response(JSON.stringify(data), response);
                         }
-                    });
+                    }
+                } catch (e) {
+                    console.error('Error processing question:', e);
                 }
-            } catch (e) {
+
+                return response;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return originalFetch.apply(this, arguments);
             }
-            return body;
         };
     }
 
-    function rgbLogo() {
-        plppdo.on('domChanged', () => {
-            const khanLogo = document.querySelector('svg._1rt6g9t').querySelector('path:nth-last-of-type(2)');
-            const styleElement = document.createElement('style');
-            styleElement.className = "RGBLogo"
-            styleElement.textContent = `
-                @keyframes colorShift {
-                    0% { fill: rgb(255, 0, 0); }
-                    33% { fill: rgb(0, 255, 0); }
-                    66% { fill: rgb(0, 0, 255); }
-                    100% { fill: rgb(255, 0, 0); }
-                }   
-            `;
-            if (features.rgbLogo && khanLogo) {
-                if (!document.getElementsByClassName('RGBLogo')[0]) document.head.appendChild(styleElement);
-                if (khanLogo.getAttribute('data-darkreader-inline-fill') != null) khanLogo.removeAttribute('data-darkreader-inline-fill');
-                khanLogo.style.animation = 'colorShift 5s infinite';
-            }
-        })
-    }
-
-    function changeBannerText() {
-        const phrases = ["[🌿] Non Skeetless dude.", "[🌿] KhanDestroyer on top.", "[🌿] Nix said hello!", "[🌿] God i wish i had KhanDestroyer.", "[🌿] Get good get KhanDestroyer!", "[🌿] the old KhanDestroyer.space"];
-        setInterval(() => {
-            const greeting = document.querySelector('.stp-animated-banner h2');
-            if (greeting && features.customBanner) greeting.textContent = phrases[Math.floor(Math.random() * phrases.length)];
-        }, 3000);
-    }
-
-    async function autoAnswer() {
-        const baseClasses = ["_1r8cd7xe", "_ssxvf9l", "_ek84n5e", "_rz7ls7u", "_1yok8f4", "_1e5cuk2a", "_19uopuu"];
-
-        async function checkAndClickElements() {
-            if (features.autoAnswer && features.questionSpoof) {
-                const classesToCheck = [...baseClasses];
-
-                if (features.nextRecomendation) {
-                    classesToCheck.push(device.mobile ? "_ixuggsz" : "_ek84n5e");
-                }
-                if (features.repeatQuestion) {
-                    classesToCheck.push("_1abyu0ga");
+    static setupVideoSpoof() {
+        const originalFetch = window.fetch;
+        window.fetch = async function(input, init) {
+            try {
+                if (!featureManager.features.videoSpoof) {
+                    return originalFetch.apply(this, arguments);
                 }
 
-                for (const className of classesToCheck) {
-                    const elements = document.getElementsByClassName(className);
-                    for (const element of elements) {
-                        if (element) {
-                            element.click();
-                            sendToast(`⭕ Clicando em ${className}...`, 1000);
-
-                            if (element.textContent === 'Mostrar resumo') {
-                                sendToast("🎉 Exercício concluído!", 1000);
-                                playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/4x5g14gj.wav');
-                            }
-
-                            // Pequeno delay entre cliques
-                            await delay(250);
-                        }
+                let body = init?.body;
+                if (body && body.includes('"operationName":"updateUserVideoProgress"')) {
+                    const bodyObj = JSON.parse(body);
+                    if (bodyObj.variables?.input) {
+                        const duration = bodyObj.variables.input.durationSeconds;
+                        bodyObj.variables.input.secondsWatched = duration;
+                        bodyObj.variables.input.lastSecondWatched = duration;
+                        init.body = JSON.stringify(bodyObj);
+                        ToastManager.showToast("🔓 Vídeo exploitado.", 1000);
                     }
                 }
-            }
-        }
 
-        // Loop principal
-        while (true) {
-            await checkAndClickElements();
-            await delay(featureConfigs.autoAnswerDelay * 750);
-        }
+                return originalFetch.apply(this, [input, init]);
+            } catch (error) {
+                console.error('Video spoof error:', error);
+                return originalFetch.apply(this, arguments);
+            }
+        };
     }
 
-    /* Inject */
-    if (!/^https?:\/\/pt\.khanacademy\.org/.test(window.location.href)) {
-        alert("❌ KhanDestroyer Failed to Injected!\n\nVocê precisa executar o KhanDestroyer no site do Khan Academy! (https://pt.khanacademy.org/)");
+    // Add other feature implementations here
+}
+
+// Main application class
+class KhanDestroyer {
+    constructor() {
+        this.eventEmitter = new SafeEventEmitter();
+        this.uiManager = new UIManager(this.eventEmitter);
+    }
+
+    async initialize() {
+        if (!this.checkValidDomain()) {
+            this.redirectToKhan();
+            return;
+        }
+
+        await this.loadDependencies();
+        this.setupUI();
+        this.setupFeatures();
+        await ToastManager.showToast("🍃 Khan Destroyer habilitado com sucesso.");
+    }
+
+    checkValidDomain() {
+        return /^https?:\/\/pt\.khanacademy\.org/.test(window.location.href);
+    }
+
+    redirectToKhan() {
+        alert("❌ KhanDestroyer Failed to Inject!\n\nVocê precisa executar o KhanDestroyer no site do Khan Academy!");
         window.location.href = "https://pt.khanacademy.org/";
     }
-    ;
 
-    showSplashScreen();
+    async loadDependencies() {
+        // Load required CSS and JS files
+        await Promise.all([
+            this.loadScript('https://cdn.jsdelivr.net/npm/toastify-js'),
+            this.loadStyle('https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css')
+        ]);
+    }
 
-    loadScript('https://cdn.jsdelivr.net/npm/darkreader@4.9.92/darkreader.min.js', 'darkReaderPlugin')
-        .then(() => {
-            DarkReader.setFetchMethod(window.fetch)
-            DarkReader.enable();
-        })
-    loadCss('https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css', 'toastifyCss');
-    loadScript('https://cdn.jsdelivr.net/npm/toastify-js', 'toastifyPlugin')
-        .then(async () => {
-            sendToast("🍃 Khan Destroyer habilitado com sucesso.");
-            playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/gcelzszy.wav');
-            await delay(500);
-            hideSplashScreen();
-            setupMenu();
-            setupMain();
-            console.clear();
-        })
+    async loadScript(url) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    async loadStyle(url) {
+        return new Promise((resolve, reject) => {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = url;
+            link.onload = resolve;
+            link.onerror = reject;
+            document.head.appendChild(link);
+        });
+    }
+
+    setupUI() {
+        this.uiManager.createWatermark();
+        this.uiManager.createOptionsMenu();
+    }
+
+    setupFeatures() {
+        FeatureImplementation.setupQuestionSpoof();
+        FeatureImplementation.setupVideoSpoof();
+        // Setup other features
+    }
 }
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new KhanDestroyer();
+    app.initialize().catch(console.error);
+});
+
+// Export for global access if needed
+window.KhanDestroyer = KhanDestroyer;
