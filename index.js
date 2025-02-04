@@ -1,4 +1,4 @@
-const ver = "V3.0.2";
+const ver = "V4.0.0";
 
 let device = {
     mobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone|Mobile|Tablet|Kindle|Silk|PlayBook|BB10/i.test(navigator.userAgent),
@@ -224,7 +224,7 @@ function setupMenu() {
 /* Main Functions */
 function setupMain(){
     function spoofQuestion() {
-        const phrases = [ "🔥 Get good, get [KhanDestroyer](https://github.com/Niximkk/KhanDestroyer/)!", "🤍 Made by [@im.nix](https://e-z.bio/sounix).", "☄️ By github.com/Niximkk/KhanDestroyer/ " ];
+        const phrases = [ "Entre na Platform Destroyer (https://discord.gg/platformdestroyer)!", "Entre na Games Destroyer (https://discord.gg/gamesdest)!", "Feito por iUnknownBr e m4nst3in <3" ];
         const originalFetch = window.fetch;
         window.fetch = async function (input, init) {
             let body;
