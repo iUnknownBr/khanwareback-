@@ -18,7 +18,7 @@ let loadedPlugins = [];
 
 /* Elements */
 const unloader = document.createElement('unloader');
-const dropdownMenu = document.createElement('dropDownMenu');
+const dropdownMenu = document.createElement('dropDownMenu'); // Changed name for clarity but not functionality
 const watermark = document.createElement('watermark');
 const statsPanel = document.createElement('statsPanel');
 const splashScreen = document.createElement('splashScreen');
@@ -102,7 +102,7 @@ function setupMenu() {
                     feature.appendChild(element);
                 }
             });
-            dropdownMenu.innerHTML += feature.outerHTML;
+            dropdownMenu.appendChild(feature);
         });
     }
     function handleInput(ids, callback = null) {
@@ -141,14 +141,16 @@ function setupMenu() {
         let isDragging = false, offsetX, offsetY;
         watermark.addEventListener('mousedown', e => { if (!dropdownMenu.contains(e.target)) { isDragging = true; offsetX = e.clientX - watermark.offsetLeft; offsetY = e.clientY - watermark.offsetTop; watermark.style.transform = 'scale(0.9)'; unloader.style.transform = 'scale(1)'; } });
         watermark.addEventListener('mouseup', () => { isDragging = false; watermark.style.transform = 'scale(1)'; unloader.style.transform = 'scale(0)'; if (checkCollision(watermark.getBoundingClientRect(), unloader.getBoundingClientRect())) unload(); });
-        document.addEventListener('mousemove', e => { if (isDragging) { let newX = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - watermark.offsetWidth)); let newY = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - watermark.offsetHeight)); Object.assign(watermark.style, { left: `${newX}px`, top: `${newY}px` }); dropdownMenu.style.display = 'none'; } });
+        document.addEventListener('mousemove', e => { if (isDragging) { let newX = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - watermark.offsetWidth)); let newY = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - watermark.offsetHeight)); Object.assign(watermark.style, { left: `${newX}px`, top: `${newY}px` }); } });
     }
-    function setupDropdown() {
+
+    // Changed to open a window instead of a dropdown
+    function setupWindow() {
         Object.assign(dropdownMenu.style, {
-            position: 'absolute', top: '100%', left: '0', width: '160px', backgroundColor: 'rgba(0,0,0,0.3)',
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', backgroundColor: 'rgba(0,0,0,0.3)',
             borderRadius: '10px', color: 'white', fontSize: '13px', fontFamily: 'Monospace, sans-serif',
-            display: 'none', flexDirection: 'column', zIndex: '1000', padding: '5px', cursor: 'default',
-            userSelect: 'none', transition: 'transform 0.3s ease', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)'
+            display: 'none', flexDirection: 'column', zIndex: '1001', padding: '10px', cursor: 'default',
+            userSelect: 'none', transition: 'opacity 0.3s ease', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', opacity: '0'
         });
         dropdownMenu.innerHTML = `
             <style>
@@ -160,7 +162,8 @@ function setupMenu() {
                 label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
             </style>
         `;
-        watermark.appendChild(dropdownMenu);
+        document.body.appendChild(dropdownMenu);
+
         let featuresList = [
             [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Spoof' },
                 { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Spoof' },
@@ -168,15 +171,26 @@ function setupMenu() {
             [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', dependent: 'autoAnswerDelay,nextRecomendation,repeatQuestion', labeled: true, label: 'Auto Answer' },
                 { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', attributes: 'style="display:none;"', labeled: true, label: 'Repeat Question' },
                 { name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', attributes: 'style="display:none;"', labeled: true, label: 'Recomendations' },
-                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }],];
+                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }]
+        ];
 
         addFeature(featuresList);
         handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
         handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
         handleInput('darkMode', checked => checked ? (DarkReader.setFetchMethod(window.fetch), DarkReader.enable()) : DarkReader.disable());
-        watermark.addEventListener('mouseenter', () => { dropdownMenu.style.display = 'flex'; playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/3kd01iyj.wav'); } );
-        watermark.addEventListener('mouseleave', e => { !watermark.contains(e.relatedTarget) && (dropdownMenu.style.display = 'none'); playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav'); });
+
+        watermark.addEventListener('click', () => {
+            if (dropdownMenu.style.display === 'none' || dropdownMenu.style.opacity === '0') {
+                dropdownMenu.style.display = 'flex';
+                dropdownMenu.style.opacity = '1';
+                playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/3kd01iyj.wav');
+            } else {
+                dropdownMenu.style.opacity = '0';
+                setTimeout(() => { dropdownMenu.style.display = 'none'; }, 300);
+                playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav');
+            }
+        });
     }
     function setupStatusPanel() {
         Object.assign(statsPanel.style, {
@@ -217,7 +231,7 @@ function setupMenu() {
         });
         document.body.appendChild(script);
     }
-    setupWatermark(); setupDropdown(); setupStatusPanel(); loadWidgetBot();
+    setupWatermark(); setupWindow(); setupStatusPanel(); loadWidgetBot();
 }
 
 /* Main Functions */
