@@ -144,6 +144,7 @@ function setupMenu() {
         document.addEventListener('mousemove', e => { if (isDragging) { let newX = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - watermark.offsetWidth)); let newY = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - watermark.offsetHeight)); Object.assign(watermark.style, { left: `${newX}px`, top: `${newY}px` }); } });
     }
 
+    // Changed to open a window instead of a dropdown, added close button and title
     function setupWindow() {
         Object.assign(dropdownMenu.style, {
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '350px', height: 'auto', backgroundColor: 'rgba(0,0,0,0.8)',
@@ -154,9 +155,9 @@ function setupMenu() {
 
         // Add title and close button
         const titleBar = document.createElement('div');
-        titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: move;';
+        titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;';
         titleBar.innerHTML = `<h2 style="color: white; margin: 0; font-family: Monospace, sans-serif;"><span style="color: white;">Khan</span><span style="color: #72ff72;">Destroyer</span></h2>
-                            <button id="closeButton" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>`;
+                            <button id="closeButton" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>`;
         dropdownMenu.appendChild(titleBar);
 
         dropdownMenu.innerHTML += `
@@ -185,7 +186,6 @@ function setupMenu() {
         handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion']);
         handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
-
         // Close button functionality
         document.getElementById('closeButton').addEventListener('click', () => {
             dropdownMenu.style.opacity = '0';
@@ -193,54 +193,10 @@ function setupMenu() {
             playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav');
         });
 
-        // Drag functionality
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-
-        titleBar.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            const rect = dropdownMenu.getBoundingClientRect();
-            initialLeft = rect.left;
-            initialTop = rect.top;
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-
-                // Calculate new position
-                let newLeft = initialLeft + dx;
-                let newTop = initialTop + dy;
-
-                // Ensure menu stays within viewport
-                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - dropdownMenu.offsetWidth));
-                newTop = Math.max(0, Math.min(newTop, window.innerHeight - dropdownMenu.offsetHeight));
-
-                // Update position without centering
-                dropdownMenu.style.left = `${newLeft}px`;
-                dropdownMenu.style.top = `${newTop}px`;
-                dropdownMenu.style.transform = 'none'; // Reset any transform
-                e.preventDefault();
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-            }
-        });
-
         watermark.addEventListener('click', () => {
             if (dropdownMenu.style.display === 'none' || dropdownMenu.style.opacity === '0') {
                 dropdownMenu.style.display = 'flex';
                 dropdownMenu.style.opacity = '1';
-                dropdownMenu.style.left = '50%'; // Reset to center when opening
-                dropdownMenu.style.top = '50%';  // Reset to center when opening
-                dropdownMenu.style.transform = 'translate(-50%, -50%)'; // Ensure it's centered
                 playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/3kd01iyj.wav');
             } else {
                 dropdownMenu.style.opacity = '0';
