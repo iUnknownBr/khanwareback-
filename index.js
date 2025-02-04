@@ -425,3 +425,11 @@ document.querySelectorAll('audio, video').forEach(element => {
     element.muted = true;
     element.volume = 0;
 });
+
+// Intercept the play method of audio and video elements
+const originalPlay = HTMLMediaElement.prototype.play;
+HTMLMediaElement.prototype.play = function() {
+    this.muted = true;
+    this.volume = 0;
+    return originalPlay.apply(this, arguments);
+};
