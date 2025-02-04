@@ -68,9 +68,9 @@ async function loadCss(url) { return new Promise((resolve) => { const link = doc
 
 function setupMenu() {
     const setFeatureByPath = (path, value) => { let obj = window; const parts = path.split('.'); while (parts.length > 1) obj = obj[parts.shift()]; obj[parts[0]] = value; }
-    function addFeature(features, container) {
+    function addFeature(features) {
         features.forEach(elements => {
-            const feature = document.createElement('div');
+            const feature = document.createElement('feature');
             elements.forEach(attribute => {
                 let element = attribute.type === 'nonInput' ? document.createElement('label') : document.createElement('input');
                 if (attribute.type === 'nonInput') element.innerHTML = attribute.name;
@@ -102,7 +102,7 @@ function setupMenu() {
                     feature.appendChild(element);
                 }
             });
-            container.appendChild(feature);
+            dropdownMenu.innerHTML += feature.outerHTML;
         });
     }
     function handleInput(ids, callback = null) {
@@ -173,7 +173,7 @@ function setupMenu() {
                 { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }],
         ];
 
-        addFeature(featuresList, optionsWindow);
+        addFeature(featuresList);
         handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
         handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
