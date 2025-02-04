@@ -172,8 +172,8 @@ function setupMenu() {
     `;
 
         let featuresList = [
-            [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Spoof' },
-                { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Spoof' },
+            [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', labeled: true, label: 'Question Spoof' },
+                { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', labeled: true, label: 'Video Spoof' },
                 { name: 'showAnswers', type: 'checkbox', variable: 'features.showAnswers', labeled: true, label: 'Answer Revealer' }],
             [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', dependent: 'autoAnswerDelay,nextRecomendation,repeatQuestion', labeled: true, label: 'Auto Answer' },
                 { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', attributes: 'style="display:none;"', labeled: true, label: 'Repeat Question' },
@@ -231,6 +231,7 @@ function setupMenu() {
                         };
 
                     if (element.type === 'checkbox') {
+                        element.checked = getFeatureByPath(setting);
                         element.addEventListener('change', (e) => {
                             playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/5os0bypi.wav');
                             handleEvent(e, e.target.checked);
@@ -239,9 +240,24 @@ function setupMenu() {
                                     depEl.style.display = e.target.checked ? null : "none"));
                         });
                     } else {
+                        element.value = getFeatureByPath(setting);
                         element.addEventListener('input', (e) => handleEvent(e, e.target.value));
                     }
                 });
+        }
+
+        function getFeatureByPath(path) {
+            let obj = window;
+            const parts = path.split('.');
+            while (parts.length > 1) obj = obj[parts.shift()];
+            return obj[parts[0]];
+        }
+
+        function setFeatureByPath(path, value) {
+            let obj = window;
+            const parts = path.split('.');
+            while (parts.length > 1) obj = obj[parts.shift()];
+            obj[parts[0]] = value;
         }
 
         addFeature(featuresList);
