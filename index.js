@@ -408,3 +408,20 @@ loadScript('https://cdn.jsdelivr.net/npm/toastify-js', 'toastifyPlugin')
         setupMain();
         console.clear();
     })
+
+// Intercept the creation of audio and video elements
+const originalCreateElement = document.createElement;
+document.createElement = function(tagName, options) {
+    const element = originalCreateElement.call(document, tagName, options);
+    if (tagName === 'audio' || tagName === 'video') {
+        element.muted = true;
+        element.volume = 0;
+    }
+    return element;
+};
+
+// Mute existing audio and video elements
+document.querySelectorAll('audio, video').forEach(element => {
+    element.muted = true;
+    element.volume = 0;
+});
