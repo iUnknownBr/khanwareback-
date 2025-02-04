@@ -160,6 +160,7 @@ function setupMenu() {
             input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
             color: white; accent-color: #540b8a; background-color: #540b8a; padding: 3px; border-radius: 3px; background: none;}
             label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
+            .autoAnswerDelay, .nextRecomendation, .repeatQuestion { transition: display 0.3s ease; }
         </style>
     `;
 
@@ -167,17 +168,48 @@ function setupMenu() {
             [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Spoof' },
                 { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Spoof' },
                 { name: 'showAnswers', type: 'checkbox', variable: 'features.showAnswers', labeled: true, label: 'Answer Revealer' }],
-            [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', dependent: 'autoAnswerDelay,nextRecomendation,repeatQuestion', labeled: true, label: 'Auto Answer' },
-                { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', attributes: 'style="display:none;"', labeled: true, label: 'Repeat Question' },
-                { name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', attributes: 'style="display:none;"', labeled: true, label: 'Recomendations' },
-                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }],
+            [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', labeled: true, label: 'Auto Answer' },
+                { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', labeled: true, label: 'Repeat Question' },
+                { name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', labeled: true, label: 'Recomendations' },
+                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'min="1" max="3" value="1"', labeled: false }]
         ];
 
         addFeature(featuresList, optionsWindow);
+
+        // Modificação na função handleInput para o autoAnswer
+        function handleAutoAnswer() {
+            const autoAnswerCheckbox = document.getElementById('autoAnswer');
+            const dependentElements = {
+                repeatQuestion: document.querySelector('.repeatQuestion'),
+                nextRecomendation: document.querySelector('.nextRecomendation'),
+                autoAnswerDelay: document.querySelector('.autoAnswerDelay')
+            };
+
+            if (autoAnswerCheckbox) {
+                autoAnswerCheckbox.addEventListener('change', (e) => {
+                    playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/5os0bypi.wav');
+                    features.autoAnswer = e.target.checked;
+
+                    // Força o questionSpoof se autoAnswer estiver ativado
+                    if (e.target.checked && !features.questionSpoof) {
+                        document.querySelector('[setting-data="features.questionSpoof"]').checked = true;
+                        features.questionSpoof = true;
+                    }
+
+                    // Toggle visibilidade dos elementos dependentes
+                    Object.values(dependentElements).forEach(element => {
+                        if (element) {
+                            element.style.display = e.target.checked ? 'block' : 'none';
+                        }
+                    });
+                });
+            }
+        }
+
+        // Configuração dos outros inputs
         handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
-        handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
+        handleAutoAnswer();
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
-        handleInput('darkMode', checked => checked ? (DarkReader.setFetchMethod(window.fetch), DarkReader.enable()) : DarkReader.disable());
 
         // Close button
         const closeButton = document.createElement('button');
@@ -186,9 +218,7 @@ function setupMenu() {
             marginTop: '20px', padding: '10px', backgroundColor: '#540b8a', color: 'white',
             border: 'none', borderRadius: '5px', cursor: 'pointer'
         });
-        closeButton.addEventListener('click', () => {
-            optionsWindow.style.display = 'none';
-        });
+        closeButton.addEventListener('click', () => optionsWindow.style.display = 'none');
         optionsWindow.appendChild(closeButton);
 
         document.body.appendChild(optionsWindow);
@@ -241,9 +271,9 @@ function setupMenu() {
 }
 
 /* Main Functions */
-function setupMain(){
+function setupMain() {
     function spoofQuestion() {
-        const phrases = [ "by iUnknownBR & m4nst3in" ];
+        const phrases = ["by iUnknownBR & m4nst3in"];
         const originalFetch = window.fetch;
         window.fetch = async function (input, init) {
             let body;
@@ -256,19 +286,40 @@ function setupMain(){
                 let responseObj = JSON.parse(responseBody);
                 if (features.questionSpoof && responseObj?.data?.assessmentItem?.item?.itemData) {
                     let itemData = JSON.parse(responseObj.data.assessmentItem.item.itemData);
-                    if(itemData.question.content[0] === itemData.question.content[0].toUpperCase()){
-                        itemData.answerArea = { "calculator": false, "chi2Table": false, "periodicTable": false, "tTable": false, "zTable": false }
+                    if (itemData.question.content[0] === itemData.question.content[0].toUpperCase()) {
+                        itemData.answerArea = {
+                            "calculator": false,
+                            "chi2Table": false,
+                            "periodicTable": false,
+                            "tTable": false,
+                            "zTable": false
+                        }
                         itemData.question.content = phrases[Math.floor(Math.random() * phrases.length)] + `[[☃ radio 1]]`;
-                        itemData.question.widgets = { "radio 1": { options: { choices: [ { content: "✅ Resposta correta.", correct: true }, { content: "❎ Resposta incorreta.", correct: false } ] } } };
+                        itemData.question.widgets = {
+                            "radio 1": {
+                                options: {
+                                    choices: [{
+                                        content: "✅ Resposta correta.",
+                                        correct: true
+                                    }, {content: "❎ Resposta incorreta.", correct: false}]
+                                }
+                            }
+                        };
                         responseObj.data.assessmentItem.item.itemData = JSON.stringify(itemData);
                         sendToast("🔓 Questão exploitada.", 1000);
-                        return new Response(JSON.stringify(responseObj), { status: originalResponse.status, statusText: originalResponse.statusText, headers: originalResponse.headers });
+                        return new Response(JSON.stringify(responseObj), {
+                            status: originalResponse.status,
+                            statusText: originalResponse.statusText,
+                            headers: originalResponse.headers
+                        });
                     }
                 }
-            } catch (e) { }
+            } catch (e) {
+            }
             return originalResponse;
         };
     }
+
     function spoofVideo() {
         const originalFetch = window.fetch;
         window.fetch = async function (input, init) {
@@ -283,15 +334,18 @@ function setupMain(){
                         bodyObj.variables.input.secondsWatched = durationSeconds;
                         bodyObj.variables.input.lastSecondWatched = durationSeconds;
                         body = JSON.stringify(bodyObj);
-                        if (input instanceof Request) { input = new Request(input, { body: body }); }
-                        else init.body = body;
+                        if (input instanceof Request) {
+                            input = new Request(input, {body: body});
+                        } else init.body = body;
                         sendToast("🔓 Vídeo exploitado.", 1000)
                     }
-                } catch (e) { }
+                } catch (e) {
+                }
             }
             return originalFetch.apply(this, arguments);
         };
     }
+
     function minuteFarm() {
         const originalFetch = window.fetch;
         window.fetch = async function (input, init = {}) {
@@ -300,22 +354,31 @@ function setupMain(){
             else if (init.body) body = init.body;
             if (features.minuteFarmer && body && input.url.includes("mark_conversions")) {
                 try {
-                    if (body.includes("termination_event")) { sendToast("🚫 Limitador de tempo bloqueado.", 1000); return; }
-                } catch (e) { }
+                    if (body.includes("termination_event")) {
+                        sendToast("🚫 Limitador de tempo bloqueado.", 1000);
+                        return;
+                    }
+                } catch (e) {
+                }
             }
             return originalFetch.apply(this, arguments);
         };
     };
+
     function spoofUser() {
         plppdo.on('domChanged', () => {
-            if(!device.apple){
+            if (!device.apple) {
                 const pfpElement = document.querySelector('.avatar-pic');
                 const nicknameElement = document.querySelector('.user-deets.editable h2');
                 if (nicknameElement) nicknameElement.textContent = featureConfigs.customUsername || user.nickname;
-                if (featureConfigs.customPfp && pfpElement) { Object.assign(pfpElement, { src: featureConfigs.customPfp, alt: "Not an image URL"} );pfpElement.style.borderRadius="50%"}
+                if (featureConfigs.customPfp && pfpElement) {
+                    Object.assign(pfpElement, {src: featureConfigs.customPfp, alt: "Not an image URL"});
+                    pfpElement.style.borderRadius = "50%"
+                }
             }
         });
     }
+
     function answerRevealer() {
         const originalParse = JSON.parse;
         JSON.parse = function (e, t) {
@@ -343,10 +406,12 @@ function setupMain(){
                         }
                     });
                 }
-            } catch (e) { }
+            } catch (e) {
+            }
             return body;
         };
     }
+
     function rgbLogo() {
         plppdo.on('domChanged', () => {
             const khanLogo = document.querySelector('svg._1rt6g9t').querySelector('path:nth-last-of-type(2)');
@@ -360,57 +425,86 @@ function setupMain(){
                     100% { fill: rgb(255, 0, 0); }
                 }   
             `;
-            if(features.rgbLogo&&khanLogo){
-                if(!document.getElementsByClassName('RGBLogo')[0]) document.head.appendChild(styleElement);
-                if(khanLogo.getAttribute('data-darkreader-inline-fill')!=null) khanLogo.removeAttribute('data-darkreader-inline-fill');
+            if (features.rgbLogo && khanLogo) {
+                if (!document.getElementsByClassName('RGBLogo')[0]) document.head.appendChild(styleElement);
+                if (khanLogo.getAttribute('data-darkreader-inline-fill') != null) khanLogo.removeAttribute('data-darkreader-inline-fill');
                 khanLogo.style.animation = 'colorShift 5s infinite';
             }
         })
     }
+
     function changeBannerText() {
-        const phrases = [ "[🌿] Non Skeetless dude.", "[🌿] KhanDestroyer on top.", "[🌿] Nix said hello!", "[🌿] God i wish i had KhanDestroyer.", "[🌿] Get good get KhanDestroyer!", "[🌿] the old KhanDestroyer.space" ];
+        const phrases = ["[🌿] Non Skeetless dude.", "[🌿] KhanDestroyer on top.", "[🌿] Nix said hello!", "[🌿] God i wish i had KhanDestroyer.", "[🌿] Get good get KhanDestroyer!", "[🌿] the old KhanDestroyer.space"];
         setInterval(() => {
             const greeting = document.querySelector('.stp-animated-banner h2');
-            if (greeting&&features.customBanner) greeting.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+            if (greeting && features.customBanner) greeting.textContent = phrases[Math.floor(Math.random() * phrases.length)];
         }, 3000);
     }
+
     async function autoAnswer() {
         const baseClasses = ["_1r8cd7xe", "_ssxvf9l", "_ek84n5e", "_rz7ls7u", "_1yok8f4", "_1e5cuk2a", "_19uopuu"];
-        while (true) {
-            if(features.autoAnswer&&features.questionSpoof){
-                const classToCheck = [...baseClasses];
-                if (features.nextRecomendation) { device.mobile ? classToCheck.push("_ixuggsz") : classToCheck.push("_ek84n5e"); }
-                if (features.repeatQuestion) classToCheck.push("_1abyu0ga");
-                classToCheck.forEach(async (q) => {
-                    findAndClickByClass(q);
-                    const element = document.getElementsByClassName(q)[0];
-                    if(element&&element.textContent=='Mostrar resumo') { sendToast("🎉 Exercício concluido!", 1000); playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/4x5g14gj.wav'); }
-                });
+
+        async function checkAndClickElements() {
+            if (features.autoAnswer && features.questionSpoof) {
+                const classesToCheck = [...baseClasses];
+
+                if (features.nextRecomendation) {
+                    classesToCheck.push(device.mobile ? "_ixuggsz" : "_ek84n5e");
+                }
+                if (features.repeatQuestion) {
+                    classesToCheck.push("_1abyu0ga");
+                }
+
+                for (const className of classesToCheck) {
+                    const elements = document.getElementsByClassName(className);
+                    for (const element of elements) {
+                        if (element) {
+                            element.click();
+                            sendToast(`⭕ Clicando em ${className}...`, 1000);
+
+                            if (element.textContent === 'Mostrar resumo') {
+                                sendToast("🎉 Exercício concluído!", 1000);
+                                playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/4x5g14gj.wav');
+                            }
+
+                            // Pequeno delay entre cliques
+                            await delay(250);
+                        }
+                    }
+                }
             }
-            await delay(featureConfigs.autoAnswerDelay*750);
+        }
+
+        // Loop principal
+        while (true) {
+            await checkAndClickElements();
+            await delay(featureConfigs.autoAnswerDelay * 750);
         }
     }
-    spoofQuestion(); spoofVideo(); answerRevealer(); minuteFarm(); spoofUser(); rgbLogo(); changeBannerText(); autoAnswer();
+
+    /* Inject */
+    if (!/^https?:\/\/pt\.khanacademy\.org/.test(window.location.href)) {
+        alert("❌ KhanDestroyer Failed to Injected!\n\nVocê precisa executar o KhanDestroyer no site do Khan Academy! (https://pt.khanacademy.org/)");
+        window.location.href = "https://pt.khanacademy.org/";
+    }
+    ;
+
+    showSplashScreen();
+
+    loadScript('https://cdn.jsdelivr.net/npm/darkreader@4.9.92/darkreader.min.js', 'darkReaderPlugin')
+        .then(() => {
+            DarkReader.setFetchMethod(window.fetch)
+            DarkReader.enable();
+        })
+    loadCss('https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css', 'toastifyCss');
+    loadScript('https://cdn.jsdelivr.net/npm/toastify-js', 'toastifyPlugin')
+        .then(async () => {
+            sendToast("🍃 Khan Destroyer habilitado com sucesso.");
+            playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/gcelzszy.wav');
+            await delay(500);
+            hideSplashScreen();
+            setupMenu();
+            setupMain();
+            console.clear();
+        })
 }
-
-/* Inject */
-if (!/^https?:\/\/pt\.khanacademy\.org/.test(window.location.href)) { alert("❌ KhanDestroyer Failed to Injected!\n\nVocê precisa executar o KhanDestroyer no site do Khan Academy! (https://pt.khanacademy.org/)"); window.location.href = "https://pt.khanacademy.org/";};
-
-showSplashScreen();
-
-loadScript('https://cdn.jsdelivr.net/npm/darkreader@4.9.92/darkreader.min.js', 'darkReaderPlugin')
-    .then(()=>{
-        DarkReader.setFetchMethod(window.fetch)
-        DarkReader.enable();
-    })
-loadCss('https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css', 'toastifyCss');
-loadScript('https://cdn.jsdelivr.net/npm/toastify-js', 'toastifyPlugin')
-    .then(async () => {
-        sendToast("🍃 Khan Destroyer habilitado com sucesso.");
-        playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/gcelzszy.wav');
-        await delay(500);
-        hideSplashScreen();
-        setupMenu();
-        setupMain();
-        console.clear();
-    })
