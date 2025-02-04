@@ -246,7 +246,13 @@ function setupMenu() {
 
         addFeature(featuresList);
         handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
-        handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
+        handleInput('autoAnswer', checked => {
+            if (checked) {
+                document.querySelectorAll('.autoAnswerDelay, .nextRecomendation, .repeatQuestion').forEach(el => el.style.display = null);
+            } else {
+                document.querySelectorAll('.autoAnswerDelay, .nextRecomendation, .repeatQuestion').forEach(el => el.style.display = 'none');
+            }
+        });
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
 
         // Close button
