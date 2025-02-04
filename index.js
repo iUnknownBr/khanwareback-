@@ -144,15 +144,23 @@ function setupMenu() {
         document.addEventListener('mousemove', e => { if (isDragging) { let newX = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - watermark.offsetWidth)); let newY = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - watermark.offsetHeight)); Object.assign(watermark.style, { left: `${newX}px`, top: `${newY}px` }); } });
     }
 
-    // Changed to open a window instead of a dropdown
+    // Changed to open a window instead of a dropdown, added close button and title
     function setupWindow() {
         Object.assign(dropdownMenu.style, {
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', backgroundColor: 'rgba(0,0,0,0.3)',
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '350px', height: 'auto', backgroundColor: 'rgba(0,0,0,0.8)',
             borderRadius: '10px', color: 'white', fontSize: '13px', fontFamily: 'Monospace, sans-serif',
             display: 'none', flexDirection: 'column', zIndex: '1001', padding: '10px', cursor: 'default',
             userSelect: 'none', transition: 'opacity 0.3s ease', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', opacity: '0'
         });
-        dropdownMenu.innerHTML = `
+
+        // Add title and close button
+        const titleBar = document.createElement('div');
+        titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;';
+        titleBar.innerHTML = `<h2 style="color: white; margin: 0; font-family: Monospace, sans-serif;"><span style="color: white;">Khan</span><span style="color: #72ff72;">Destroyer</span></h2>
+                            <button id="closeButton" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>`;
+        dropdownMenu.appendChild(titleBar);
+
+        dropdownMenu.innerHTML += `
             <style>
                 input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
                 border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
@@ -179,6 +187,13 @@ function setupMenu() {
         handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
         handleInput('darkMode', checked => checked ? (DarkReader.setFetchMethod(window.fetch), DarkReader.enable()) : DarkReader.disable());
+
+        // Close button functionality
+        document.getElementById('closeButton').addEventListener('click', () => {
+            dropdownMenu.style.opacity = '0';
+            setTimeout(() => { dropdownMenu.style.display = 'none'; }, 300);
+            playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav');
+        });
 
         watermark.addEventListener('click', () => {
             if (dropdownMenu.style.display === 'none' || dropdownMenu.style.opacity === '0') {
