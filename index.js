@@ -151,8 +151,16 @@ function setupMenu() {
             justifyContent: 'center', alignItems: 'center', overflowY: 'auto'
         });
 
+        // Add title
+        const title = document.createElement('div');
+        title.innerHTML = `<span style="color: white;">Khan</span><span style="color: #39FF14;">Destroyer</span>`;
+        Object.assign(title.style, {
+            fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center'
+        });
+        optionsWindow.appendChild(title);
+
         // Add features list and input handling
-        optionsWindow.innerHTML = `
+        optionsWindow.innerHTML += `
         <style>
             input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
             border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
