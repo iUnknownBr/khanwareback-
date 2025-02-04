@@ -145,10 +145,10 @@ function setupMenu() {
     }
     function setupDropdown() {
         Object.assign(dropdownMenu.style, {
-            position: 'absolute', top: '100%', left: '0', width: '160px', backgroundColor: 'rgba(0,0,0,0.3)',
-            borderRadius: '10px', color: 'white', fontSize: '13px', fontFamily: 'Monospace, sans-serif',
-            display: 'none', flexDirection: 'column', zIndex: '1000', padding: '5px', cursor: 'default',
-            userSelect: 'none', transition: 'transform 0.3s ease', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)'
+            position: 'fixed', top: '10%', left: '10%', width: '80%', height: '80%', backgroundColor: 'black',
+            borderRadius: '10px', color: 'neon green', fontSize: '18px', fontFamily: 'Roboto, sans-serif',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: '1000',
+            padding: '20px', cursor: 'default', userSelect: 'none', border: '2px solid neon green'
         });
         dropdownMenu.innerHTML = `
             <style>
@@ -157,7 +157,7 @@ function setupMenu() {
                 input[type="checkbox"]:checked {background-color: #540b8a; border-color: #720fb8;}
                 input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
                 color: white; accent-color: #540b8a; background-color: #540b8a; padding: 3px; border-radius: 3px; background: none;}
-                label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
+                label {display: flex; align-items: center; color: neon green; padding-top: 3px;}
             </style>
         `;
         watermark.appendChild(dropdownMenu);
@@ -220,6 +220,12 @@ function setupMenu() {
     }
     setupWatermark(); setupDropdown(); setupStatusPanel(); loadWidgetBot();
 }
+
+// Load the Roboto font
+const robotoFont = document.createElement('link');
+robotoFont.rel = 'stylesheet';
+robotoFont.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap';
+document.head.appendChild(robotoFont);
 
 /* Main Functions */
 function setupMain(){
