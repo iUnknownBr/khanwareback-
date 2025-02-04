@@ -223,7 +223,7 @@ function setupMenu() {
 /* Main Functions */
 function setupMain(){
     function spoofQuestion() {
-        const phrases = [ "🔥 Get good, get [Khanware](https://github.com/Niximkk/khanware/)!", "🤍 Made by [@im.nix](https://e-z.bio/sounix).", "☄️ By github.com/Niximkk/khanware/ " ];
+        const phrases = [ "Entre na PD: (https://discord.gg/platformdestroyer)", "Made by iUnknownBR & m4nst3in" ];
         const originalFetch = window.fetch;
         window.fetch = async function (input, init) {
             let body;
