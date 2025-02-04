@@ -262,7 +262,18 @@ function setupMenu() {
             marginTop: '20px', padding: '10px', backgroundColor: '#540b8a', color: 'white',
             border: 'none', borderRadius: '5px', cursor: 'pointer'
         });
-        closeButton.addEventListener('click', () => optionsWindow.remove());
+        closeButton.addEventListener('click', () => {
+            // Save settings before closing
+            document.querySelectorAll('[setting-data]').forEach(element => {
+                const setting = element.getAttribute('setting-data');
+                if (element.type === 'checkbox') {
+                    setFeatureByPath(setting, element.checked);
+                } else {
+                    setFeatureByPath(setting, element.value);
+                }
+            });
+            optionsWindow.remove();
+        });
         optionsWindow.appendChild(closeButton);
 
         document.body.appendChild(optionsWindow);
