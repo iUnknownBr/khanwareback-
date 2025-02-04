@@ -144,23 +144,25 @@ function setupMenu() {
         document.addEventListener('mousemove', e => { if (isDragging) { let newX = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - watermark.offsetWidth)); let newY = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - watermark.offsetHeight)); Object.assign(watermark.style, { left: `${newX}px`, top: `${newY}px` }); dropdownMenu.style.display = 'none'; } });
     }
     function setupDropdown() {
-        Object.assign(dropdownMenu.style, {
-            position: 'absolute', top: '100%', left: '0', width: '160px', backgroundColor: 'rgba(0,0,0,0.3)',
-            borderRadius: '10px', color: 'white', fontSize: '13px', fontFamily: 'Monospace, sans-serif',
-            display: 'none', flexDirection: 'column', zIndex: '1000', padding: '5px', cursor: 'default',
-            userSelect: 'none', transition: 'transform 0.3s ease', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)'
+        const optionsWindow = document.createElement('div');
+        Object.assign(optionsWindow.style, {
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '300px', height: '400px', backgroundColor: 'rgba(0,0,0,0.8)', color: 'white',
+            borderRadius: '10px', zIndex: '1001', padding: '20px', display: 'none', flexDirection: 'column',
+            justifyContent: 'center', alignItems: 'center', overflowY: 'auto'
         });
-        dropdownMenu.innerHTML = `
-            <style>
-                input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
-                border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
-                input[type="checkbox"]:checked {background-color: #540b8a; border-color: #720fb8;}
-                input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
-                color: white; accent-color: #540b8a; background-color: #540b8a; padding: 3px; border-radius: 3px; background: none;}
-                label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
-            </style>
-        `;
-        watermark.appendChild(dropdownMenu);
+
+        optionsWindow.innerHTML = `
+        <style>
+            input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
+            border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
+            input[type="checkbox"]:checked {background-color: #540b8a; border-color: #720fb8;}
+            input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
+            color: white; accent-color: #540b8a; background-color: #540b8a; padding: 3px; border-radius: 3px; background: none;}
+            label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
+        </style>
+    `;
+
         let featuresList = [
             [{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Spoof' },
                 { name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Spoof' },
@@ -168,15 +170,33 @@ function setupMenu() {
             [{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', dependent: 'autoAnswerDelay,nextRecomendation,repeatQuestion', labeled: true, label: 'Auto Answer' },
                 { name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', attributes: 'style="display:none;"', labeled: true, label: 'Repeat Question' },
                 { name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', attributes: 'style="display:none;"', labeled: true, label: 'Recomendations' },
-                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }],];
+                { name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'featureConfigs.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false }],
+        ];
 
         addFeature(featuresList);
         handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
         handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
         handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
         handleInput('darkMode', checked => checked ? (DarkReader.setFetchMethod(window.fetch), DarkReader.enable()) : DarkReader.disable());
-        watermark.addEventListener('mouseenter', () => { dropdownMenu.style.display = 'flex'; playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/3kd01iyj.wav'); } );
-        watermark.addEventListener('mouseleave', e => { !watermark.contains(e.relatedTarget) && (dropdownMenu.style.display = 'none'); playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav'); });
+
+        // Close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        Object.assign(closeButton.style, {
+            marginTop: '20px', padding: '10px', backgroundColor: '#540b8a', color: 'white',
+            border: 'none', borderRadius: '5px', cursor: 'pointer'
+        });
+        closeButton.addEventListener('click', () => {
+            optionsWindow.style.display = 'none';
+        });
+        optionsWindow.appendChild(closeButton);
+
+        document.body.appendChild(optionsWindow);
+
+        watermark.addEventListener('click', () => {
+            optionsWindow.style.display = 'flex';
+            playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/3kd01iyj.wav');
+        });
     }
     function setupStatusPanel() {
         Object.assign(statsPanel.style, {
