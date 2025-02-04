@@ -222,7 +222,7 @@ function setupMenu() {
 /* Main Functions */
 function setupMain(){
     function spoofQuestion() {
-        const phrases = [ "Entre na Platform Destroyer (https://discord.gg/platformdestroyer)!", "Entre na Games Destroyer (https://discord.gg/gamesdest)!", "Feito por iUnknownBr e m4nst3in <3" ];
+        const phrases = [ "🔥 Get good, get [Khanware](https://github.com/Niximkk/khanware/)!", "🤍 Made by [@im.nix](https://e-z.bio/sounix).", "☄️ By github.com/Niximkk/khanware/ " ];
         const originalFetch = window.fetch;
         window.fetch = async function (input, init) {
             let body;
