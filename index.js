@@ -155,21 +155,21 @@ function setupMenu() {
 
         // Add title and close button
         const titleBar = document.createElement('div');
-        titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: move;';
+        titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;';
         titleBar.innerHTML = `<h2 style="color: white; margin: 0; font-family: Monospace, sans-serif;"><span style="color: white;">Khan</span><span style="color: #72ff72;">Destroyer</span></h2>
-                          <button id="closeButton" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>`;
+                            <button id="closeButton" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>`;
         dropdownMenu.appendChild(titleBar);
 
         dropdownMenu.innerHTML += `
-        <style>
-            input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
-            border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
-            input[type="checkbox"]:checked {background-color: #72ff72; border-color: #72ff72;}
-            input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
-                color: white; accent-color: #72ff72; background-color: #72ff72; padding: 3px; border-radius: 3px; background: none;}
-            label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
-        </style>
-    `;
+            <style>
+                input[type="checkbox"] {appearance: none; width: 15px; height: 15px; background-color: #3a3a3b;
+                border: 1px solid #acacac; border-radius: 3px; margin-right: 5px; cursor: pointer;}
+                input[type="checkbox"]:checked {background-color: #72ff72; border-color: #72ff72;}
+                input[type="text"], input[type="number"], input[type="range"] {width: calc(100% - 10px); border: 1px solid #343434;
+                    color: white; accent-color: #72ff72; background-color: #72ff72; padding: 3px; border-radius: 3px; background: none;}
+                label {display: flex; align-items: center; color: #3a3a3b; padding-top: 3px;}
+            </style>
+        `;
         document.body.appendChild(dropdownMenu);
 
         let featuresList = [
@@ -193,24 +193,6 @@ function setupMenu() {
             playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav');
         });
 
-        // Make the window draggable
-        let isDragging = false, offsetX, offsetY;
-        titleBar.addEventListener('mousedown', e => {
-            isDragging = true;
-            offsetX = e.clientX - dropdownMenu.offsetLeft;
-            offsetY = e.clientY - dropdownMenu.offsetTop;
-            dropdownMenu.style.transform = 'none';
-        });
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-        document.addEventListener('mousemove', e => {
-            if (isDragging) {
-                dropdownMenu.style.left = `${e.clientX - offsetX}px`;
-                dropdownMenu.style.top = `${e.clientY - offsetY}px`;
-            }
-        });
-
         watermark.addEventListener('click', () => {
             if (dropdownMenu.style.display === 'none' || dropdownMenu.style.opacity === '0') {
                 dropdownMenu.style.display = 'flex';
@@ -222,30 +204,6 @@ function setupMenu() {
                 playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav');
             }
         });
-    }
-    function setupStatusPanel() {
-        Object.assign(statsPanel.style, {
-            position: 'fixed', top: '95%', left: '20px', width: '250px', height: '30px',
-            backgroundColor: 'rgb(0,0,0,0.2)', color: 'white', fontSize: '13px', fontFamily: 'Arial, sans-serif',
-            display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'default', borderRadius: '10px',
-            userSelect: 'none', zIndex: '1000', transition: 'transform 0.3s', backdropFilter: 'blur(1.5px)', WebkitBackdropFilter: 'blur(1.5px)'
-        });
-        const getPing = async () => { try { const t = performance.now(); await fetch('https://pt.khanacademy.org/', { method: 'HEAD' }); return Math.round(performance.now() - t); } catch { return 'Error'; } };
-        let lastFrameTime = performance.now(), frameCount = 0, fps = 0;
-        (function calcFPS() { if (++frameCount && performance.now() - lastFrameTime >= 1000) { fps = Math.round(frameCount * 1000 / (performance.now() - lastFrameTime)); frameCount = 0; lastFrameTime = performance.now(); } requestAnimationFrame(calcFPS); })();
-        const getTime = () => new Date().toLocaleTimeString();
-        const update = async () => statsPanel.innerHTML = `
-            <span style="text-shadow: -1px 0.5px 0 #p, -2px 0px 0 #2f672e;">kd</span>
-            <span style="margin: 0 8px;">|</span><span>${fps}fps</span>
-            <span style="margin: 0 8px;">|</span><span>${await getPing()}ms</span>
-            <span style="margin: 0 8px;">|</span><span>${getTime()}</span>
-        `;
-        update(); document.body.appendChild(statsPanel); setInterval(update, 1000);
-        let isDragging = false, offsetX, offsetY;
-        statsPanel.onmousedown = e => { isDragging = true; offsetX = e.clientX - statsPanel.offsetLeft; offsetY = e.clientY - statsPanel.offsetTop; statsPanel.style.transform = 'scale(0.9)'; };
-        statsPanel.onmouseup = () => { isDragging = false; statsPanel.style.transform = 'scale(1)'; };
-        document.onmousemove = e => { if (isDragging) { Object.assign(statsPanel.style, { left: `${Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - statsPanel.offsetWidth))}px`, top: `${Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - statsPanel.offsetHeight))}px` }); }};
-        if(device.mobile) plppdo.on('domChanged', () => window.location.href.includes("khanacademy.org/profile") ? statsPanel.style.display = 'flex' : statsPanel.style.display = 'none' );
     }
     function loadWidgetBot() {
         if(device.mobile)  return;
@@ -262,7 +220,7 @@ function setupMenu() {
         });
         document.body.appendChild(script);
     }
-    setupWatermark(); setupWindow(); setupStatusPanel(); loadWidgetBot();
+    setupWatermark(); setupWindow(); loadWidgetBot();
 }
 
 /* Main Functions */
