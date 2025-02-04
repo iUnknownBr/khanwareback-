@@ -56,6 +56,7 @@ new MutationObserver((mutationsList) => { for (let mutation of mutationsList) if
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const playAudio = url => { const audio = new Audio(url); audio.play(); };
 const checkCollision = (obj1, obj2) => !( obj1.right < obj2.left || obj1.left > obj2.right || obj1.bottom < obj2.top || obj1.top > obj2.bottom );
+const findAndClickByClass = className => { const element = document.querySelector(`.${className}`); if (element) { element.click(); sendToast(`⭕ Pressionando ${className}...`, 1000); } }
 
 function sendToast(text, duration=5000, gravity='bottom') { Toastify({ text: text, duration: duration, gravity: gravity, position: "center", stopOnFocus: true, style: { background: "#000000" } }).showToast(); };
 
